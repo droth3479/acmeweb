@@ -1,10 +1,13 @@
 package com.acme.statusmgr;
 
 import com.acme.statusmgr.beans.ServerStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -27,6 +30,9 @@ public class StatusController {
 
     protected static final String template = "Server Status requested by %s";
     protected final AtomicLong counter = new AtomicLong();
+    protected final Logger logger = LoggerFactory.getLogger("DetailLogger");
+    protected static final String logTemplate = "Details were provided: [%s]";
+
 
     /**
      * Process a request for server status information
@@ -35,7 +41,12 @@ public class StatusController {
      * @return a ServerStatus object containing the info to be returned to the requestor
      */
     @RequestMapping("/status")
-    public ServerStatus getStatus(@RequestParam(value = "name", defaultValue = "Anonymous") String name) {
+    public ServerStatus getStatus(@RequestParam(value = "name", defaultValue = "Anonymous") String name,
+                                  @RequestParam(value = "details", required = false) List<String> details) {
+        if(details != null) {
+            logger.info(String.format(logTemplate, String.join(",", details)));
+        }
+
         return new ServerStatus(counter.incrementAndGet(),
                 String.format(template, name));
     }
