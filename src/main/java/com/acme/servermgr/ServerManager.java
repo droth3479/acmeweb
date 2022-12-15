@@ -1,5 +1,8 @@
 package com.acme.servermgr;
 
+import com.acme.ISystemStatus;
+import com.acme.SystemStatus;
+
 /**
  * Manage all servers (service providers) being tracked by the Acme server tracking system
  * For now just some simple static methods for use in school project.
@@ -7,13 +10,14 @@ package com.acme.servermgr;
  * the various 'services' that are being managed.
  */
 public class ServerManager {
+    private static ISystemStatus systemStatusImplementation;
 
     /**
      * Get the status of this server
      * @return a descriptive string about the servers status
      */
     static public String getCurrentServerStatus() {
-        return "up";  // The server is up
+        return systemStatusImplementation.getCurrentServerStatus();
     }
 
     /**
@@ -23,5 +27,13 @@ public class ServerManager {
     static public Boolean isOperatingNormally()
     {
         return true;
+    }
+
+    /**
+     * Determine which implementation of SystemStatus to use
+     * @param systemStatusImplementation an implementation of SystemStatus
+     */
+    public static void setSystemStatusImplementation(ISystemStatus systemStatusImplementation) {
+        ServerManager.systemStatusImplementation = systemStatusImplementation;
     }
 }
