@@ -15,6 +15,9 @@
  */
 package com.acme.statusmgr;
 
+import com.acme.MockSystemStatus;
+import com.acme.statusmgr.beans.AbstractServerStatus;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -34,6 +37,11 @@ public class ServerStatusControllerTests {
     @Autowired
     private MockMvc mockMvc;
 
+    @BeforeAll
+    public static void setUp() {
+        AbstractServerStatus.setSystemStatus(new MockSystemStatus());
+    }
+
     @Test
     public void noNameParamShouldReturnDefaultMessage() throws Exception {
 
@@ -49,4 +57,43 @@ public class ServerStatusControllerTests {
                 .andExpect(jsonPath("$.contentHeader").value("Server Status requested by RebYid"));
     }
 
+    @Test
+    public void basicDetail() throws Exception {
+
+        this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors"))
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusDesc").value("Server is up, , and there are 4 processors available"));
+    }
+
+    @Test
+    public void detailed_name_availProc() throws Exception {
+        this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors&name=Yankel"))
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.contentHeader").value("Server Status requested by Yankel"))
+                .andExpect(jsonPath("$.requestCost").value(4))
+                .andExpect(jsonPath("$.statusDesc").value("Server is up, and there are 4 processors available"));
+    }
+
+    @Test
+    public void detailed_name_all_details() throws Exception {
+        this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors," +
+                        "freeJvmMemory,jreVersion,tempLocation,totalJvmMemory&name=Yankel"))
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.contentHeader").value("Server Status requested by Yankel"))
+                .andExpect(jsonPath("$.requestCost").value(71))
+                .andExpect(jsonPath("$.statusDesc").value(
+                        "Server is up, and there are 4 processors available, and there are 127268272 bytes " +
+                                "of JVM memory free, and the JRE version is 15.0.2+7-27, and the server's temp file " +
+                                "location is M:\\AppData\\Local\\Temp, and there is a total of 159383552 bytes of " +
+                                "JVM memory"));
+    }
+
+    @Test
+    public void detailed_double_detail() throws Exception {
+        this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors,availableProcessors"))
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.requestCost").value(7))
+                .andExpect(jsonPath("$.statusDesc").value(
+                        "Server is up, and there are 4 processors available, and there are 4 processors available"));
+    }
 }
