@@ -1,27 +1,15 @@
 package com.acme;
 
 public interface ISystemStatus {
-    static String getCurrentServerStatus() {
-        return null;
-    }
+    String getCurrentServerStatus();
 
-    static String getAvailableProcessors() {
-        return null;
-    }
+    String getAvailableProcessors();
 
-    static String getFreeJvmMemory() {
-        return null;
-    }
+    String getFreeJvmMemory();
 
-    static String getTotalJvmMemory() {
-        return null;
-    }
+    String getTotalJvmMemory();
 
-    static String getJreVersion() {
-        return null;
-    }
+    String getJreVersion();
 
-    static String getTempLocation() {
-        return null;
-    }
+    String getTempLocation();
 }
