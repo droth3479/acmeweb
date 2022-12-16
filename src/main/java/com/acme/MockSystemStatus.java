@@ -22,6 +22,6 @@ public class MockSystemStatus implements ISystemStatus{
     }
 
     public String getTempLocation() {
-        return ", and the server's temp file location is M:\\\\AppData\\\\Local\\\\Temp";
+        return ", and the server's temp file location is M:\\AppData\\Local\\Temp";
     }
 }

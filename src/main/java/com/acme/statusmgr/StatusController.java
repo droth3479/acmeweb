@@ -64,8 +64,10 @@ public class StatusController {
     @RequestMapping("/status/detailed")
     public AbstractServerStatus getDetailedStatus(@RequestParam(value = "name", defaultValue = "Anonymous") String name,
                                           @RequestParam(value = "details") List<String> details) {
+        System.out.println("In method");
         AbstractServerStatus status = new ServerStatus(counter.incrementAndGet(), String.format(template, name), new SystemStatus());
         for (String detail : details) {
+            System.out.println("in for");
             status = switch (detail) {
                 case "availableProcessors" -> new AvailableProcessorsDecorator(status);
                 case "freeJvmMemory" -> new FreeJvmMemoryDecorator(status);
@@ -75,6 +77,7 @@ public class StatusController {
                 default -> throw new IllegalArgumentException("Invalid detail requested: " + detail);
             };
         }
+        System.out.println("about to return");
         return status;
     }
 }

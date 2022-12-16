@@ -59,28 +59,17 @@ public class ServerStatusControllerTests {
 
     @Test
     public void basicDetail() throws Exception {
-
         this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors"))
                 .andDo(print()).andExpect(status().isOk())
-                .andExpect(jsonPath("$.statusDesc").value("Server is up, , and there are 4 processors available"));
-    }
-
-    @Test
-    public void detailed_name_availProc() throws Exception {
-        this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors&name=Yankel"))
-                .andDo(print()).andExpect(status().isOk())
-                .andExpect(jsonPath("$.contentHeader").value("Server Status requested by Yankel"))
-                .andExpect(jsonPath("$.requestCost").value(4))
                 .andExpect(jsonPath("$.statusDesc").value("Server is up, and there are 4 processors available"));
     }
 
     @Test
-    public void detailed_name_all_details() throws Exception {
+    public void detailed_all_details() throws Exception {
         this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors," +
-                        "freeJvmMemory,jreVersion,tempLocation,totalJvmMemory&name=Yankel"))
+                        "freeJvmMemory,jreVersion,tempLocation,totalJvmMemory"))
                 .andDo(print()).andExpect(status().isOk())
-                .andExpect(jsonPath("$.contentHeader").value("Server Status requested by Yankel"))
-                .andExpect(jsonPath("$.requestCost").value(71))
+                .andExpect(jsonPath("$.requestCost").value(72))
                 .andExpect(jsonPath("$.statusDesc").value(
                         "Server is up, and there are 4 processors available, and there are 127268272 bytes " +
                                 "of JVM memory free, and the JRE version is 15.0.2+7-27, and the server's temp file " +
