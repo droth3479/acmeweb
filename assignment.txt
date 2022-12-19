@@ -1,0 +1,173 @@
+This is a complex assignment, be sure to read it several times; break up the work into multiple steps/commits; make use of the IDE capabilities (e.g. use Refactor "Extract Superclass" on ServerStatus, use copy/paste for decorators, create interface first then choose "implement methods")
+
+Agile Story #1: As a systems operator I need a new URL request that obtains additional detailed status items from Acme “Server Status” web application, so I can tell if there are any problems with the system being monitored. In the future I will need even more status information about additional items.
+Without affecting functionality of existing /server/status URL request, a new /server/status/detailed URL request is to be added.
+This new URL requires and validates a parameter called “details” with a comma-separated list of one or more items whose statuses are to be returned in the statusDesc response field.
+The basic (preexisting) server status info (“Server is up”) should always appear in the beginning of the statusDesc response field.
+Each detail item that is returned should be separated with a comma, exactly as shown in examples below.
+
+Agile Story #2: As a systems operator when I request detailed system status information from the Acme “Server Status” web application, I need to be able to request many combinations of status items, to be returned in an English-like form, in the order I request them.
+
+The user shall be able to request "details" items  in any order, and can request duplicates of any items (see example below).
+The additional text in the response that provides more detailed statuses is to appear in the same order as requested by the user in the “details” parameter.
+
+Agile Story #3: As a Software Engineering Manager, I want all of the varied types of system status we make use of, to be funneled/obtainable through a centralized, simple class, so that new programmers can easily see what status items we care about and how to obtain them.
+
+Agile Story #4: As the Test Engineering Manager for the Acme “Server Status” web application, I want to be able to test the logic that handles generation of English text of multiple details (from stories 1,2), such that the actual status values don’t vary from one test to another during testing, so that most testing can be done in an automated way.
+
+The default will be to provide real values for 'details', but a unit test should be able to request that fake, predetermined values are returned to facilitate testing.  The fake values are the ones shown in the column “Expected output substring sample” in the "Details and their Outputs" table below.
+
+Agile Story #5: As a businessman I want us to compute and return the cost of satisfying server status requests so we can bill for them and make money.
+
+Every detail shall have a cost associated with it, the values are listed in the "Details and their Outputs" table below. One field, 'requestCost' should contain the sum of all costs for the request.
+
+
+Additional Requirements:
+
+Here is a list of the new 'details' items that can be requested (in addition to the basic server status whose source is the simple static method in ServerManager.java, which the Facade class will also use)
+
+Details and their Outputs
+Item in “details” list
+
+Cost
+
+Expected output substring sample
+
+Source of data
+
+availableProcessors
+
+3
+
+, and there are 4 processors available
+
+Runtime
+
+freeJVMMemory
+
+7
+
+, and there are 127268272 bytes of JVM memory free
+
+Runtime
+
+totalJVMMemory
+
+13
+
+, and there is a total of 159383552 bytes of JVM memory
+
+Runtime
+
+jreVersion
+
+19
+
+, and the JRE version is 15.0.2+7-27
+
+Runtime
+
+tempLocation
+
+29
+
+, and the server's temp file location is M:\\AppData\\Local\\Temp
+
+System.getenv("TEMP");
+
+
+
+
+
+Implementation details:
+
+You must handle invalid “details” items as shown in Test Cases.
+The Acme Software Architect has decided that:
+Story #1 will make use of the following JDK classes as new sources of status items (in addition to ServerManager): Runtime, System.
+Stories #1 #2 and #5 will leverage the Decorator pattern, each detail type shall have its own decorator class. Decorators will calculate costs, contain the ‘English language’ text and and logic for stringing together status values into sentences, and will obtain their status values from the methods in the Facade.
+Story #3 will leverage the Facade pattern which should incorporate all status items from all sources.
+Story #4 will leverage the use of the Facade through the Strategy Pattern and DIP to allow a real or a ‘mock’ implementation of the facade to be selected. So there will be an interface that lays out all possible methods for obtaining all status items, and 2 implementations of the interface, the Facade class - which makes calls to all of the real sources of status items; and a Mock class, which just returns the predefined dummy data.
+
+To handle error when your code encounters an invalid detail type, see https://www.baeldung.com/spring-mvc-controller-custom-http-status-code Links to an external site.. - Section 2.2 - the exception approach, but to meet our requirements for a custom error message that references the improperly specified ‘detail’ type, you must override the Exception class’s constructor, accept a custom message (like: “Invalid details option: junkERROR”) and pass it to “super”. Instead of HttpStatus.FORBIDDEN use HttpStatus.BAD_REQUEST.
+
+To tell Spring we always want the error's detailed message to be returned we have to add a setting to the Spring application.properties file, which you don’t yet have. So:
+- Under “main” create a directory called ‘resources’
+- Under ‘resources’ create a file called application.properties
+- In application.properties add the following setting:
+                 server.error.include-message=always
+Test Cases:
+
+Here is an example of a request with all supported details:
+
+http://localhost:8080/server/status/detailed?name=Yankel&details=availableProcessors,freeJVMMemory,totalJVMMemory,jreVersion,tempLocation
+
+ Links to an external site.The result of this in a browser would be something like:
+
+{"id":8,"contentHeader":"Server Status requested by Yankel","requestCost":72,"statusDesc":"Server is up, and there are 4 processors available, and there are 127268272 bytes of JVM memory free, and there is a total of 159383552 bytes of JVM memory, and the JRE version is 15.0.2+7-27, and the server's temp file location is M:\\AppData\\Local\\Temp"}
+
+
+Here is an example with a bad details item:
+
+http://localhost:8080/server/status/detailed?name=Yankel&details=availableProcessors,junkERROR
+
+ Links to an external site.The result of this in a browser would be something like:
+
+Whitelabel Error Page
+This application has no explicit mapping for /error, so you are seeing this as a fallback.
+Wed Apr 07 17:06:55 EDT 2021
+There was an unexpected error (type=Bad Request, status=400).
+Invalid details option: junkERROR
+
+Here is a legal example of a repeated detail:
+http://localhost:8080/server/status/detailed?name=Yankel&details=availableProcessors,availableProcessors
+
+ Links to an external site.The result of this in a browser would be something like:
+
+{"id":12,"contentHeader":"Server Status requested by Yankel","requestCost":7,"statusDesc":"Server is up, and there are 4 processors available, and there are 4 processors available"}
+
+Although all possible combinations of URL parameters must work for real (i.e. returning real data from Runtime/System) from the browser, as per story #4 the system must be testable through automated JUnit tests, in a mode that gives back predefined data values but otherwise tests the logic of the decorators. So there are two implementations of the interface that defines all status items. The tests must use the Mock implementation instead of the real one, as follows:
+
+The decorators shall follow DIP with regards to dependency on system status information (i.e. should not be dependent on hard coded classes for getting status details) and must have a method for setting what implementation is to be used, that method should save that info in a class property (variable)
+The decorators should all reference that class property to call methods that obtain status item values
+When running ‘for real’ - the base class for all status items/decorators should be told to use the Facade class (real implementation that callsServerManager, Runtime, System). This could be done in either Application.Java or in ServerController.java.
+When running tests - the base class for all status items/decorators should be told (part of “Arrange”)  to use the Mock class (fake implementation that returns the hard coded values listed here). This could be done in either each Test method, or in a “@BeforeAll” setup method in the test class.
+
+You must code a set of fairly representative JUnit unit tests to make sure your code is covered properly (combinations, order, duplicates, errors). Here are some hints:
+Here is a typical unit test for one possible combination:
+
+@Test
+public void detailed_name_availProc() throws Exception {
+    this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors&name=Yankel"))
+            .andDo(print()).andExpect(status().isOk())
+            .andExpect(jsonPath("$.contentHeader").value("Server Status requested by Yankel"))
+            .andExpect(jsonPath("$.requestCost").value(4))
+            .andExpect(jsonPath("$.statusDesc").value("Server is up, and there are 4 processors available"));
+}
+
+For the testing of expected error cases, instead of .andExpect(status().isOk()   you would call the .isXXXXXXX() method for the type of error you are expecting.  If that tests true (that you received that expected error, you would then use the following pattern to check for your custom error message text:
+
+.andExpect(status().reason(is("my custom message")));
+
+The "is()" method should be imported via: "import static org.hamcrest.Matchers.is;"
+
+
+
+Coding/Submission:
+
+0) Merge your Pull request from previous assignment into master, if not already done.
+
+1) Create a new branch called statusDetails to be used for this assignment.
+
+2) Write your JUnit test methods for the new functionality, and commit them (Red cycle of TDD)
+
+3) Implement the stories, making the tests work. Make frequent commits as you reach milestones of more tests working.
+
+4) When completed, make a pull request. You should have multiple commits, but only one Pull request, that only contains changes relevant to this assignment. Do not include test results or the build directory.
+
+5) Make a Canvas submission of the pull request link, and explain:
+
+Why the Architect decided you should use the Decorator pattern.
+Besides the explicit reason given in Story #3, what benefit did we gain by using the Facade pattern?
+Challenges you faced, and what decisions you were faced with.
+
+
