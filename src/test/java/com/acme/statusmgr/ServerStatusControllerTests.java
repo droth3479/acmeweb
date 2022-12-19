@@ -29,6 +29,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static org.hamcrest.Matchers.is;
+
+/**
+ * Test class for status controller
+ */
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,13 +62,22 @@ public class ServerStatusControllerTests {
                 .andExpect(jsonPath("$.contentHeader").value("Server Status requested by RebYid"));
     }
 
+    /**
+     * Assert that detail and name param are operational
+     * @throws Exception if invalid detail is passed
+     */
     @Test
     public void basicDetail() throws Exception {
-        this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors"))
+        this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors&name=Bob"))
                 .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.contentHeader").value("Server Status requested by Bob"))
                 .andExpect(jsonPath("$.statusDesc").value("Server is up, and there are 4 processors available"));
     }
 
+    /**
+     * Assert all details operate, as well as proper ordering
+     * @throws Exception if invalid detail is passed
+     */
     @Test
     public void detailed_all_details() throws Exception {
         this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors," +
@@ -77,6 +91,10 @@ public class ServerStatusControllerTests {
                                 "JVM memory"));
     }
 
+    /**
+     * Assert that details can be doubled
+     * @throws Exception iif invalid detail is passed
+     */
     @Test
     public void detailed_double_detail() throws Exception {
         this.mockMvc.perform(get("/server/status/detailed?details=availableProcessors,availableProcessors"))
@@ -85,4 +103,25 @@ public class ServerStatusControllerTests {
                 .andExpect(jsonPath("$.statusDesc").value(
                         "Server is up, and there are 4 processors available, and there are 4 processors available"));
     }
+
+    /**
+     * Assert appropriate error is thrown if invalid detail is requested
+     * @throws IllegalArgumentException due to invalid detail
+     */
+    @Test
+    public void badDetail() throws Exception {
+        this.mockMvc.perform(get("/server/status/detailed?details=badDetail"))
+                .andExpect(status().isBadRequest())
+                .andExpect(status().reason(is("Invalid detail requested: badDetail")));
+    }
 }
+/*
+For the testing of expected error cases, instead of .andExpect(status().isOk()
+you would call the .isXXXXXXX() method for the type of error you are expecting.
+If that tests true (that you received that expected error, you would then use the
+following pattern to check for your custom error message text:
+
+.andExpect(status().reason(is("my custom message")));
+
+The "is()" method should be imported via: "import static org.hamcrest.Matchers.is;"
+ */

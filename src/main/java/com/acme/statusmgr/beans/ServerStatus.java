@@ -53,6 +53,7 @@ public class ServerStatus extends AbstractServerStatus {
      *
      * @return some string
      */
+    @Override
     public String getContentHeader() {
         return contentHeader;
     }

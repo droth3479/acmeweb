@@ -1,5 +1,10 @@
 package com.acme;
 
+/**
+ * "Real" implementation of server status
+ * <p>
+ * Returns values based on Runtime and System classes
+ */
 public class SystemStatus implements ISystemStatus{
     public String getCurrentServerStatus() {
         return "up";

@@ -1,5 +1,10 @@
 package com.acme;
 
+/**
+ * Mock implementation of system status
+ * <p>
+ * For use in test class, returns dummy values
+ */
 public class MockSystemStatus implements ISystemStatus{
     public String getCurrentServerStatus() {
         return "Server is up";

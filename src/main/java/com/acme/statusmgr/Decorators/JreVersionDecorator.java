@@ -2,7 +2,9 @@ package com.acme.statusmgr.Decorators;
 
 import com.acme.ISystemStatus;
 import com.acme.statusmgr.beans.AbstractServerStatus;
-
+/**
+ * Decorator to add details about jre version
+ */
 public class JreVersionDecorator extends StatusDecorator{
     final int COST = 19;
 

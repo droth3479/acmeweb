@@ -1,8 +1,10 @@
 package com.acme.statusmgr.Decorators;
 
-import com.acme.ISystemStatus;
 import com.acme.statusmgr.beans.AbstractServerStatus;
 
+/**
+ * Decorator to add details about available processors
+ */
 public class AvailableProcessorsDecorator extends StatusDecorator{
     final int COST = 3;
 

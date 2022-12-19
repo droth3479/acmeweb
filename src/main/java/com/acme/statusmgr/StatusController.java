@@ -6,6 +6,7 @@ import com.acme.statusmgr.beans.AbstractServerStatus;
 import com.acme.statusmgr.beans.ServerStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -74,7 +75,7 @@ public class StatusController {
                 case "jreVersion" -> new JreVersionDecorator(status);
                 case "tempLocation" -> new TempLocationDecorator(status);
                 case "totalJvmMemory" -> new TotalJvmMemoryDecorator(status);
-                default -> throw new IllegalArgumentException("Invalid detail requested: " + detail);
+                default ->
             };
         }
         System.out.println("about to return");

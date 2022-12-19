@@ -2,7 +2,9 @@ package com.acme.statusmgr.Decorators;
 
 import com.acme.ISystemStatus;
 import com.acme.statusmgr.beans.AbstractServerStatus;
-
+/**
+ * Decorator to add details about total jvm memory
+ */
 public class TotalJvmMemoryDecorator extends StatusDecorator{
     final int COST = 13;
 

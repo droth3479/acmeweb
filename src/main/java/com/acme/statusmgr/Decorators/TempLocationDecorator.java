@@ -2,7 +2,9 @@ package com.acme.statusmgr.Decorators;
 
 import com.acme.ISystemStatus;
 import com.acme.statusmgr.beans.AbstractServerStatus;
-
+/**
+ * Decorator to add details about temp location
+ */
 public class TempLocationDecorator extends StatusDecorator{
     final int COST = 29;
 
