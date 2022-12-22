@@ -64,7 +64,7 @@ public class ServerStatusControllerTests {
 
     /**
      * Assert that detail and name param are operational
-     * @throws Exception if invalid detail is passed
+     * @throws Exception if perform fails
      */
     @Test
     public void basicDetail() throws Exception {
@@ -76,7 +76,7 @@ public class ServerStatusControllerTests {
 
     /**
      * Assert all details operate, as well as proper ordering
-     * @throws Exception if invalid detail is passed
+     * @throws Exception if perform fails
      */
     @Test
     public void detailed_all_details() throws Exception {
@@ -93,7 +93,7 @@ public class ServerStatusControllerTests {
 
     /**
      * Assert that details can be doubled
-     * @throws Exception iif invalid detail is passed
+     * @throws Exception if perform fails
      */
     @Test
     public void detailed_double_detail() throws Exception {
@@ -106,7 +106,7 @@ public class ServerStatusControllerTests {
 
     /**
      * Assert appropriate error is thrown if invalid detail is requested
-     * @throws IllegalArgumentException due to invalid detail
+     * @throws Exception if perform fails
      */
     @Test
     public void badDetail() throws Exception {

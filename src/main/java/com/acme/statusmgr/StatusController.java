@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -65,20 +66,18 @@ public class StatusController {
     @RequestMapping("/status/detailed")
     public AbstractServerStatus getDetailedStatus(@RequestParam(value = "name", defaultValue = "Anonymous") String name,
                                           @RequestParam(value = "details") List<String> details) {
-        System.out.println("In method");
         AbstractServerStatus status = new ServerStatus(counter.incrementAndGet(), String.format(template, name), new SystemStatus());
         for (String detail : details) {
-            System.out.println("in for");
             status = switch (detail) {
                 case "availableProcessors" -> new AvailableProcessorsDecorator(status);
                 case "freeJvmMemory" -> new FreeJvmMemoryDecorator(status);
                 case "jreVersion" -> new JreVersionDecorator(status);
                 case "tempLocation" -> new TempLocationDecorator(status);
                 case "totalJvmMemory" -> new TotalJvmMemoryDecorator(status);
-                default ->
+                default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid detail requested: "
+                    + detail);
             };
         }
-        System.out.println("about to return");
         return status;
     }
 }
