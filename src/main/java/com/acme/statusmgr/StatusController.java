@@ -1,11 +1,16 @@
 package com.acme.statusmgr;
 
+import com.acme.SystemStatus;
+import com.acme.statusmgr.Decorators.*;
+import com.acme.statusmgr.beans.AbstractServerStatus;
 import com.acme.statusmgr.beans.ServerStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,6 +53,31 @@ public class StatusController {
         }
 
         return new ServerStatus(counter.incrementAndGet(),
-                String.format(template, name));
+                String.format(template, name), new SystemStatus());
+    }
+
+    /**
+     * Process a request for detailed server status info
+     *
+     * @param name optional param identifying the requester
+     * @param details a list of details requested
+     * @return a ServerStatus object containing the details to be returned to the requester
+     */
+    @RequestMapping("/status/detailed")
+    public AbstractServerStatus getDetailedStatus(@RequestParam(value = "name", defaultValue = "Anonymous") String name,
+                                          @RequestParam(value = "details") List<String> details) {
+        AbstractServerStatus status = new ServerStatus(counter.incrementAndGet(), String.format(template, name), new SystemStatus());
+        for (String detail : details) {
+            status = switch (detail) {
+                case "availableProcessors" -> new AvailableProcessorsDecorator(status);
+                case "freeJvmMemory" -> new FreeJvmMemoryDecorator(status);
+                case "jreVersion" -> new JreVersionDecorator(status);
+                case "tempLocation" -> new TempLocationDecorator(status);
+                case "totalJvmMemory" -> new TotalJvmMemoryDecorator(status);
+                default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid detail requested: "
+                    + detail);
+            };
+        }
+        return status;
     }
 }

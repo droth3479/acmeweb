@@ -1,11 +1,13 @@
 package com.acme.statusmgr.beans;
 
+import com.acme.ISystemStatus;
+import com.acme.SystemStatus;
 import com.acme.servermgr.ServerManager;
 
 /**
  * A POJO that represents Server Status and can be returned as the result of a request.
  */
-public class ServerStatus {
+public class ServerStatus extends AbstractServerStatus {
 
 
     private long id;                // Unique identifier of request, sequential number
@@ -17,16 +19,20 @@ public class ServerStatus {
      * Construct a ServerStatus using info passed in for identification, and obtaining current
      * server status from the appropriate Manager class.
      * This class must return a pretty, english-like representation of the server status.
-     *
-     * @param id            a numeric identifier/counter of which request this is
+     *  @param id            a numeric identifier/counter of which request this is
      * @param contentHeader info about the request
+     * @param implementation determines how system status is accessed
      */
-    public ServerStatus(long id, String contentHeader) {
+    public ServerStatus(long id, String contentHeader, ISystemStatus implementation) {
+        if(systemStatusImplementation == null) {
+            systemStatusImplementation = new SystemStatus();
+        }
+
         this.id = id;
         this.contentHeader = contentHeader;
 
         // Obtain current status of server
-        this.statusDesc = "Server is " + ServerManager.getCurrentServerStatus();
+        this.statusDesc = "Server is " + systemStatusImplementation.getCurrentServerStatus();
     }
 
     public ServerStatus() {
@@ -47,6 +53,7 @@ public class ServerStatus {
      *
      * @return some string
      */
+    @Override
     public String getContentHeader() {
         return contentHeader;
     }
@@ -56,14 +63,16 @@ public class ServerStatus {
      *
      * @return A string describing status
      */
+    @Override
     public String getStatusDesc() {
-        return statusDesc;
+        return systemStatusImplementation.getCurrentServerStatus();
     }
 
     /**
      * Get the cost of this request
      * @return Integer representing the cost of request as number of pennies
      */
+    @Override
     public Integer getRequestCost() {
         return requestCost;
     }
